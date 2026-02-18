@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Перенесення вогню</title>
+    <style>
+        :root {
+            /* Палітра Military Liquid */
+            --bg-deep: #050805;
+            --glass-panel: rgba(30, 40, 30, 0.65); 
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shine: rgba(255, 255, 255, 0.08);
+            
+            --neon-green: #39ff14; 
+            --neon-amber: #ffaa00;
+            --alert-red: #ff3b30;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93; 
+            
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            --font-mono: "SF Mono", "Menlo", monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px 16px;
+            font-family: var(--font-stack);
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(20, 50, 20, 0.6) 0, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(40, 60, 40, 0.6) 0, transparent 50%),
+                radial-gradient(at 50% 50%, #000000 0%, #0a0f0a 100%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h2 {
+            text-align: center;
+            font-weight: 800;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            text-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            opacity: 0.8;
+        }
+
+        .glass-card {
+            background: var(--glass-panel);
+            backdrop-filter: blur(25px) saturate(120%);
+            -webkit-backdrop-filter: blur(25px) saturate(120%);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 20px 40px -10px rgba(0, 0, 0, 0.6),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            padding: 24px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 40%; height: 3px;
+            background: var(--neon-green);
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 0 10px var(--neon-green);
+            opacity: 0.7;
+        }
+
+        h3 {
+            font-size: 13px;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 20px 0 12px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        h3::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .col { flex: 1; }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+            padding-left: 4px;
+        }
+
+        input {
+            width: 100%;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 17px;
+            font-weight: 600;
+            text-align: center;
+            
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(0, 0, 0, 0.5);
+            border-color: var(--neon-green);
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.5),
+                0 0 0 3px rgba(57, 255, 20, 0.15);
+            transform: scale(1.01);
+        }
+
+        /* --- ЗМІНЕНО ТУТ --- */
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5); /* Було 0.15, стало 0.5 (світліше) */
+            font-weight: 400;
+        }
+
+        button {
+            width: 100%;
+            height: 52px;
+            margin-top: 25px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #ff453a 0%, #c41c00 100%);
+            color: white;
+            font-family: var(--font-stack);
+            font-size: 17px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3);
+            transition: transform 0.1s, filter 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
+            pointer-events: none;
+        }
+
+        button:active {
+            transform: scale(0.96);
+            filter: brightness(0.9);
+        }
+
+        .result-box {
+            margin-top: 25px;
+            background: rgba(0, 10, 0, 0.6);
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .result-text {
+            font-family: var(--font-mono);
+            color: var(--neon-green);
+            font-size: 15px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            text-shadow: 0 0 8px rgba(57, 255, 20, 0.3);
+        }
+
+        .result-box::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(57, 255, 20, 0.05), transparent);
+            pointer-events: none;
+            animation: scanline 4s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .input-warning input {
+            color: var(--neon-amber);
+            border-color: rgba(255, 170, 0, 0.3);
+        }
+        .input-warning input:focus {
+            border-color: var(--neon-amber);
+            box-shadow: 0 0 0 3px rgba(255, 170, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Transfer Fire</h2>
+    <div class="subtitle">Перенесення вогню</div>
+
+    <div class="glass-card">
+        
+        <h3><span style="opacity:0.7">01</span> // Крайні Установки</h3>
+        <div class="row">
+            <div class="col">
+                <label>Приціл 1-ї</label>
+                <input type="number" id="p1_old" placeholder="548">
+            </div>
+            <div class="col">
+                <label>Доворот 1-ї</label>
+                <input type="text" id="d1_old" placeholder="24-57">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label>Приціл 2-ї (Осн)</label>
+                <input type="number" id="p2_old" placeholder="511">
+            </div>
+            <div class="col">
+                <label>Доворот 2-ї (Осн)</label>
+                <input type="text" id="d2_old" placeholder="24-84">
+            </div>
+        </div>
+
+        <h3><span style="opacity:0.7">02</span> // Топографія</h3>
+        <div class="row">
+            <div class="col">
+                <label>D топ (Стара)</label>
+                <input type="number" id="dt_old" placeholder="1725">
+            </div>
+            <div class="col">
+                <label>D топ (Нова)</label>
+                <input type="number" id="dt_new" placeholder="1515">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label>α (Стара)</label>
+                <input type="text" id="a_old" placeholder="26-00">
+            </div>
+            <div class="col">
+                <label>α (Нова)</label>
+                <input type="text" id="a_new" placeholder="22-37">
+            </div>
+        </div>
+
+        <h3><span style="opacity:0.7">03</span> // Коефіцієнт</h3>
+        <div class="input-warning">
+            <label style="color: var(--neon-amber);">ΔX (на 1 поділку Пр)</label>
+            <input type="number" id="dx" value="5.6" step="0.1">
+        </div>
+
+        <button onclick="calculateManualTransfer()">Розрахувати</button>
+
+        <div class="result-box">
+            <div id="resTransfer" class="result-text">ОЧІКУВАННЯ ДАНИХ...</div>
+        </div>
+    </div>
+
+    <script>
+        function parseArt(val) {
+            if (!val) return 0;
+            let c = val.toString().replace(/[,–—−-]/g, '.');
+            return parseFloat(c);
+        }
+
+        function convertToMils(val) {
+            let sign = val < 0 ? -1 : 1;
+            let abs = Math.abs(val);
+            let big = Math.floor(abs);
+            let small = Math.round((abs - big) * 100);
+            return sign * (big * 100 + small);
+        }
+
+        function milsToArt(mils) {
+            let sign = mils < 0 ? "-" : "";
+            let abs = Math.abs(mils);
+            let big = Math.floor(abs / 100);
+            let small = Math.round(abs % 100);
+            if (small >= 100) { big++; small -= 100; }
+            return sign + (big < 10 ? "0" + big : big) + "-" + (small < 10 ? "0" + small : small);
+        }
+        
+        function calcAngleDiff(a1, a2) {
+            let v1 = convertToMils(a1);
+            let v2 = convertToMils(a2);
+            return v1 - v2; 
+        }
+
+        function addAngles(baseArt, deltaMils) {
+            let baseMils = convertToMils(baseArt);
+            let resMils = baseMils + deltaMils;
+            while (resMils >= 6000) resMils -= 6000;
+            while (resMils < 0) resMils += 6000;
+            return milsToArt(resMils);
+        }
+
+        function formatDeltaArt(mils) {
+            let sign = mils >= 0 ? "+" : "-";
+            let abs = Math.abs(mils);
+            let big = Math.floor(abs / 100);
+            let small = Math.round(abs % 100);
+            return sign + (big < 10 ? "0" + big : big) + "-" + (small < 10 ? "0" + small : small);
+        }
+
+        function calculateManualTransfer() {
+            let p1_old = parseFloat(document.getElementById('p1_old').value) || 0;
+            let d1_old = parseArt(document.getElementById('d1_old').value);
+            let p2_old = parseFloat(document.getElementById('p2_old').value) || 0;
+            let d2_old = parseArt(document.getElementById('d2_old').value);
+
+            let dt_old = parseFloat(document.getElementById('dt_old').value) || 0;
+            let dt_new = parseFloat(document.getElementById('dt_new').value) || 0;
+            let a_old = parseArt(document.getElementById('a_old').value);
+            let a_new = parseArt(document.getElementById('a_new').value);
+            
+            let dx = parseFloat(document.getElementById('dx').value);
+
+            if (!dx || dx === 0) {
+                document.getElementById('resTransfer').innerHTML = "<span style='color:#ff3b30'>ПОМИЛКА: Введіть ΔX</span>";
+                return;
+            }
+
+            let deltaDist = dt_new - dt_old;
+            let deltaP = deltaDist / dx;
+            let deltaD_mils = calcAngleDiff(a_new, a_old);
+
+            let res = `> РОЗРАХУНОК УСПІШНИЙ\n`;
+            res += `------------------------\n`;
+            res += `∆ D:   ${Math.round(deltaDist)} м\n`;
+            res += `∆ Пр:  ${deltaP > 0 ? '+' : ''}${deltaP.toFixed(1)} \n`;
+            res += `∆ Дов: ${formatDeltaArt(deltaD_mils)}\n`;
+            res += `------------------------\n`;
+            res += `НОВІ УСТАНОВКИ:\n\n`;
+            
+            let p1_new = p1_old + deltaP;
+            let d1_new_str = addAngles(d1_old, deltaD_mils);
+            res += `Г1 >> Пр: ${Math.round(p1_new)} | Дов: ${d1_new_str}\n`;
+            
+            let p2_new = p2_old + deltaP;
+            let d2_new_str = addAngles(d2_old, deltaD_mils);
+            res += `Г2 >> Пр: ${Math.round(p2_new)} | Дов: ${d2_new_str}`;
+
+            let output = document.getElementById('resTransfer');
+            output.innerText = res;
+            output.style.color = "var(--neon-green)";
+        }
+    </script>
+</body>
+</html>
