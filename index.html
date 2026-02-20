@@ -645,7 +645,7 @@
         let deltaP = (d_new - d_old) / dx;
         let deltaD = a_new - m2.dir;
 
-        let res = `ПЕРЕНОС ВІД ЦІЛІ №${logCount}:\n`;
+        let res = `ПЕРЕНОС ВІД ПРИСТРІЛЯНОЇ ЦІЛІ:\n`;
         res += `М1: Пр ${(m1.p + deltaP).toFixed(1)} | Дов ${formatArtCorr((m1.dir + deltaD) - initial_on)}\n`;
         res += `М2: Пр ${(m2.p + deltaP).toFixed(1)} | Дов ${formatArtCorr((m2.dir + deltaD) - initial_on)}\n`;
         res += `--------------------------\n`;
