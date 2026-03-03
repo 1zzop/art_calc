@@ -74,7 +74,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Декоративна лінія зверху (як у твоєму прикладі) */
         details::before {
             content: '';
             position: absolute;
@@ -87,7 +86,6 @@
             z-index: 2;
         }
 
-        /* Стиль заголовка спойлера */
         summary {
             padding: 20px;
             font-weight: 700;
@@ -144,7 +142,6 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Перший h3 в блоці без відступу зверху */
         .content-pad > h3:first-child { margin-top: 0; }
 
         .row { display: flex; gap: 12px; margin-bottom: 12px; }
@@ -263,7 +260,6 @@
             100% { transform: translateY(100%); }
         }
 
-        /* Canvas Styles */
         canvas { 
             background: #fff; 
             border-radius: 12px; 
@@ -274,7 +270,6 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
 
-        /* Table Styles */
         .log-container { 
             overflow-x: auto; 
             margin-top: 20px; 
@@ -286,28 +281,16 @@
         th, td { padding: 10px 5px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
         th { background: rgba(255,255,255,0.05); color: var(--neon-amber); font-weight: 600; }
         td { color: #fff; font-family: var(--font-mono); }
-/* --- TEXT DANGER BLINK ANIMATION --- */
-@keyframes textDangerPulse {
-    0%, 100% {
-        color: rgba(255, 59, 48, 0.6);
-        text-shadow: 0 0 3px rgba(255, 59, 48, 0.2);
-        opacity: 0.8;
-    }
-    50% {
-        color: #ff3b30; /* Насичений червоний */
-        text-shadow: 
-            0 0 8px rgba(255, 59, 48, 0.8), 
-            0 0 15px rgba(255, 59, 48, 0.5);
-        opacity: 1;
-    }
-}
 
-.text-danger-blink {
-    animation: textDangerPulse 1.2s infinite ease-in-out !important;
-    font-weight: 700;
-}
-        
+        @keyframes textDangerPulse {
+            0%, 100% { color: rgba(255, 59, 48, 0.6); text-shadow: 0 0 3px rgba(255, 59, 48, 0.2); opacity: 0.8; }
+            50% { color: #ff3b30; text-shadow: 0 0 8px rgba(255, 59, 48, 0.8), 0 0 15px rgba(255, 59, 48, 0.5); opacity: 1; }
+        }
 
+        .text-danger-blink {
+            animation: textDangerPulse 1.2s infinite ease-in-out !important;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -473,13 +456,13 @@
         </div>
     </details>
 
-<script data-goatcounter="https://1zop.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+<script data-goatcounter="https://1zop.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     
 <script>
     // ==========================================
     // SCRIPT 1: MAP LOGIC (CANVAS)
     // ==========================================
+    // --- Допоміжні функції ---
     function parse6000(s) {
         try {
             var str = (s || '').toString().trim();
@@ -488,11 +471,14 @@
             return parseFloat(b[0]) + parseFloat(b[1]) / 100;
         } catch(e) { return 0; }
     }
+
     function degFrom6000(t) { return t * 6; }
     function radFromDegTopZero(deg) { return (deg - 90) * Math.PI / 180; }
 
+    // --- ОСНОВНА ФУНКЦІЯ РОЗРАХУНКУ ---
     function calcMap() {
         try {
+            // 1. Отримання даних
             var onStr = document.getElementById('inON').value;
             var kStr = document.getElementById('inK').value;
             var d = parseFloat(document.getElementById('inD').value) || 0;
@@ -502,6 +488,7 @@
             var on = parse6000(onStr);
             var k = parse6000(kStr);
 
+            // 2. Математика координат
             var aON = (on * 6 - 90) * Math.PI / 180;
             var aK = aON + (30 - k) * 6 * Math.PI / 180;
             var a_G1_OG = (on * 6 + (30 - k) * 6);
@@ -511,11 +498,13 @@
             var dy = d * Math.sin(rad);
             var aAB = aON + radFromDegTopZero(degFrom6000(30 - k) + 90);
 
-            // Dial Canvas
+            // 3. Малювання Г-1 (Dial)
             var cd = document.getElementById('canvDial');
             var ctxd = cd.getContext('2d');
             cd.width = 400; cd.height = 400;
             ctxd.clearRect(0, 0, 400, 400);
+
+            // Зовнішня шкала
             for (var i = 0; i < 60; i++) {
                 var a = radFromDegTopZero(i * 6);
                 ctxd.beginPath();
@@ -528,14 +517,33 @@
                     ctxd.fillText(num, 200 + 180 * Math.cos(a) - 10, 200 + 180 * Math.sin(a) + 5);
                 }
             }
+            // Внутрішня шкала
+            for (var i = 0; i < 60; i++) {
+                var a = radFromDegTopZero(degFrom6000(on) + (30 - i) * 6);
+                ctxd.beginPath();
+                ctxd.moveTo(200 + 125 * Math.cos(a), 200 + 125 * Math.sin(a));
+                ctxd.lineTo(200 + (i % 5 === 0 ? 105 : 115) * Math.cos(a), 200 + (i % 5 === 0 ? 105 : 115) * Math.sin(a));
+                ctxd.strokeStyle = 'blue'; ctxd.stroke();
+                if (i % 10 === 0) {
+                    ctxd.fillStyle = 'blue'; ctxd.font = '12px Arial';
+                    var num = i < 10 ? '0' + i : i;
+                    ctxd.fillText(num, 200 + 90 * Math.cos(a) - 10, 200 + 90 * Math.sin(a) + 5);
+                }
+            }
+            // Стрілки
             ctxd.lineWidth = 5; ctxd.strokeStyle = 'red'; ctxd.beginPath();
             ctxd.moveTo(200, 200); ctxd.lineTo(200 + 140 * Math.cos(aON), 200 + 140 * Math.sin(aON)); ctxd.stroke();
             
-            // Map Canvas
+            ctxd.lineWidth = 3; ctxd.strokeStyle = 'blue'; ctxd.setLineDash([10, 5]); ctxd.beginPath();
+            ctxd.moveTo(200, 200); ctxd.lineTo(200 + 165 * Math.cos(aAB), 200 + 165 * Math.sin(aAB)); ctxd.stroke(); ctxd.setLineDash([]);
+
+            // 4. Малювання Мапи
             var cm = document.getElementById('canvMap');
             var ctxm = cm.getContext('2d');
             cm.width = 400; cm.height = 400;
             ctxm.clearRect(0, 0, 400, 400);
+
+            // Сітка
             ctxm.strokeStyle = '#ddd'; ctxm.lineWidth = 1; ctxm.beginPath();
             for (var i = 0; i <= 400; i += 50) { ctxm.moveTo(i, 0); ctxm.lineTo(i, 400); ctxm.moveTo(0, i); ctxm.lineTo(400, i); }
             ctxm.stroke();
@@ -545,21 +553,55 @@
             var Ax = Bx + dx * scale;
             var Ay = By + dy * scale;
 
+            // Лінія
             ctxm.lineWidth = 2; ctxm.strokeStyle = 'blue'; ctxm.setLineDash([10, 5]);
             ctxm.beginPath(); ctxm.moveTo(Ax, Ay); ctxm.lineTo(Bx, By); ctxm.stroke(); ctxm.setLineDash([]);
-            
-            ctxm.fillStyle = 'red'; ctxm.beginPath(); ctxm.arc(Bx, By, 8, 0, 2 * Math.PI); ctxm.fill(); ctxm.fillText('ОГ', Bx + 14, By + 4);
-            ctxm.fillStyle = 'blue'; ctxm.beginPath(); ctxm.arc(Ax, Ay, 8, 0, 2 * Math.PI); ctxm.fill(); ctxm.fillText('Г1', Ax + 14, Ay + 4);
 
+            // Точки
+            var r = 8;
+            ctxm.fillStyle = 'red'; ctxm.beginPath(); ctxm.arc(Bx, By, r, 0, 2 * Math.PI); ctxm.fill(); ctxm.fillText('ОГ', Bx + 14, By + 4);
+            ctxm.fillStyle = 'blue'; ctxm.beginPath(); ctxm.arc(Ax, Ay, r, 0, 2 * Math.PI); ctxm.fill(); ctxm.fillText('Г1', Ax + 14, Ay + 4);
+            
+            // Міні-напрямки 
+            var extraLen = r * 0.5;
+            var startOff = r;
+            var endOff = r + extraLen;
+
+            ctxm.lineWidth = 3;
+            ctxm.strokeStyle = 'red';
+            ctxm.beginPath();
+            ctxm.moveTo(Bx + startOff * Math.cos(aON), By + startOff * Math.sin(aON));
+            ctxm.lineTo(Bx + endOff * Math.cos(aON), By + endOff * Math.sin(aON));
+            ctxm.stroke();
+
+            ctxm.strokeStyle = 'blue';
+            ctxm.beginPath();
+            ctxm.moveTo(Ax + startOff * Math.cos(aON), Ay + startOff * Math.sin(aON));
+            ctxm.lineTo(Ax + endOff * Math.cos(aON), Ay + endOff * Math.sin(aON));
+            ctxm.stroke();
+
+            // 5. Розрахунок результатів
             var diff = (a_OG_G1 - on * 6) * Math.PI / 180;
-            var ustup = d * Math.cos(diff);var inter = -1 * d * Math.sin(diff);
+            var ustup = d * Math.cos(diff);
+            var inter = -1 * d * Math.sin(diff);
+
             var dPric = (dxVal !== 0) ? ustup / dxVal : 0;
             var dKut = (dTopVal !== 0) ? (inter * 955) / dTopVal : 0;
 
+            // Округлення
+            var ustupR = Math.round(ustup);
+            var interR = Math.round(inter);
+            var dPricR = Math.round(dPric);
+            var dKutR = Math.round(dKut);
+
+            // Вивід
             document.getElementById('resultMap').innerHTML =
-                "УСТУП: " + Math.round(ustup) + " м | ІНТЕРВАЛ: " + Math.round(inter) + " м<br>" +
-                "Δ Прицілу: <span style='color:#00ff00'>" + Math.round(dPric) + "</span> | Δ Кутоміру: <span style='color:#00ff00'>" + Math.round(dKut) + "</span>";
-        } catch (err) {}
+                "УСТУП: " + ustupR + " м | ІНТЕРВАЛ: " + interR + " м<br>" +
+                "Δ Прицілу: <span style='color: #00ff00'>" + dPricR + "</span> | Δ Кутоміру: <span style='color: #00ff00'>" + dKutR + "</span>";
+
+        } catch (err) {
+            console.error("Помилка:", err.message);
+        }
     }
 
     // ==========================================
@@ -776,3 +818,4 @@
 </script>
 </body>
 </html>
+
